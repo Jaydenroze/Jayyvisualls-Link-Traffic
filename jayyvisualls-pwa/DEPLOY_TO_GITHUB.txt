@@ -1,0 +1,72 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  JayyVisualls — Permanent iPhone App via GitHub
+  Free forever · Your URL: username.github.io/jayyvisualls
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 1 — Create a GitHub account
+──────────────────────────────────
+1. Go to:  https://github.com/signup
+2. Sign up with your email (free account)
+3. Verify your email
+
+
+STEP 2 — Create a new repository
+──────────────────────────────────
+1. Go to:  https://github.com/new
+2. Repository name:  jayyvisualls
+3. Set to:  ✅ Public  (required for free GitHub Pages)
+4. Leave everything else as-is
+5. Click "Create repository"
+
+
+STEP 3 — Upload the app files
+───────────────────────────────
+1. On your new empty repo page, click:
+   "uploading an existing file"
+   (or drag files into the page)
+
+2. Open your "jayyvisualls-pwa" folder on your Mac
+
+3. Select ALL files inside it and drag them into GitHub:
+   ✓ index.html
+   ✓ manifest.json
+   ✓ sw.js
+   ✓ icons/  (the whole folder)
+
+4. Scroll down, click "Commit changes"
+
+
+STEP 4 — Turn on GitHub Pages
+───────────────────────────────
+1. Click "Settings" tab (top of your repo)
+2. Left sidebar → click "Pages"
+3. Under "Branch" → select "main" → click Save
+4. Wait 1-2 minutes
+5. GitHub shows you your live URL:
+   https://[your-username].github.io/jayyvisualls/
+
+
+STEP 5 — Install on iPhone
+────────────────────────────
+1. Open that URL in Safari on your iPhone
+2. Tap Share  →  "Add to Home Screen"  →  Add
+3. Done. Permanent app icon on your home screen.
+
+
+UPDATING THE APP IN THE FUTURE:
+─────────────────────────────────
+When there's a new version:
+1. Go to your repo:  github.com/[username]/jayyvisualls
+2. Click the file you want to update (e.g. index.html)
+3. Click the pencil icon ✏️ to edit
+4. Paste the new file content → Commit
+   (or drag-drop new files to replace old ones)
+
+Changes go live in ~1 minute automatically.
+
+
+YOUR PERMANENT URL:
+────────────────────
+https://[your-github-username].github.io/jayyvisualls/
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
