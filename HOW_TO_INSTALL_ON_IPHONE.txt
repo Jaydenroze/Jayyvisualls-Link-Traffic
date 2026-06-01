@@ -1,0 +1,47 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  JayyVisualls — Get it on your iPhone
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 1 — Deploy the app (free, 2 minutes)
+──────────────────────────────────────────
+1. Go to:  https://app.netlify.com/drop
+   (no account needed for a quick test link)
+
+2. Drag the entire "jayyvisualls-pwa" folder
+   onto the Netlify page
+
+3. Netlify gives you a URL like:
+   https://random-name-123.netlify.app
+
+   → For a permanent link, sign up free at netlify.com
+     and claim the site. You can rename the URL too, e.g.:
+     https://jayyvisualls.netlify.app
+
+
+STEP 2 — Install on iPhone
+────────────────────────────
+1. Open the URL on your iPhone in Safari
+   (must be Safari — Chrome won't work for install)
+
+2. Tap the Share button  (box with arrow pointing up)
+
+3. Scroll down and tap "Add to Home Screen"
+
+4. Name it "JayyVisualls" → tap Add
+
+5. Done — it's on your home screen like a real app.
+   Full screen, no browser bar, works offline.
+
+
+NOTES:
+──────
+• Your data syncs between Mac and iPhone via the
+  same Netlify URL — log in from any device.
+
+• If you want your data private and not on a public
+  URL, let me know — I can add a password screen.
+
+• To update the app later, just drag a new version
+  of the folder to Netlify Drop again.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
