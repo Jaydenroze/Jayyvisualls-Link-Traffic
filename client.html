@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Content Performance Report</title>
+<style>
+:root{--bg:#f4f4fb;--card:#fff;--border:#e4e4f0;--text:#1a1a2e;--muted:#6b6b8a;--accent:#7c6fff;--green:#22c55e;--red:#ef4444;--yellow:#f59e0b;--dark:#0f0f1a}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;min-height:100vh}
+
+.header{background:linear-gradient(135deg,#1a1a2e,#0f3460);color:#fff;padding:32px 28px}
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-mark{width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#e1306c);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;color:#fff}
+.logo-name{font-size:14px;font-weight:700;opacity:.8}
+.report-badge{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:4px 14px;font-size:12px;font-weight:600}
+.client-name{font-size:28px;font-weight:800;margin-bottom:4px}
+.report-period{font-size:14px;opacity:.65}
+
+.period-bar{background:#fff;border-bottom:1px solid var(--border);padding:12px 28px;display:flex;gap:8px;overflow-x:auto}
+.period-btn{padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:#fff;color:var(--muted);white-space:nowrap;transition:all .15s}
+.period-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+
+.page{padding:24px 28px;max-width:1100px;margin:0 auto}
+
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:24px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
+
+.stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 20px}
+.stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.stat-val{font-size:28px;font-weight:800;color:var(--text)}
+.stat-delta{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;padding:2px 7px;border-radius:20px;margin-top:5px}
+.delta-up{background:rgba(34,197,94,.1);color:var(--green)}
+.delta-down{background:rgba(239,68,68,.1);color:var(--red)}
+.delta-flat{background:rgba(107,114,128,.1);color:var(--muted)}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:4px}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px}
+.card-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px}
+.card-title{font-size:14px;font-weight:700;color:var(--text)}
+.card-sub{font-size:11px;color:var(--muted)}
+
+.section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:14px}
+
+/* COMPARISON */
+.vs-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:13px}
+.vs-name{width:140px;font-weight:600;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vs-bar-wrap{flex:1;height:22px;background:#f0f0f8;border-radius:4px;overflow:hidden;position:relative}
+.vs-bar{height:100%;border-radius:4px;transition:width .8s ease;display:flex;align-items:center;padding-left:8px;font-size:10px;font-weight:700;color:#fff;white-space:nowrap}
+.vs-val{width:60px;text-align:right;font-weight:700;color:var(--text);flex-shrink:0}
+.vs-you{background:linear-gradient(90deg,var(--accent),#a78bfa)}
+.vs-comp{background:linear-gradient(90deg,#94a3b8,#cbd5e1);color:var(--text)}
+
+/* LEAD TABLE */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:8px 10px;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border)}
+td{padding:11px 10px;border-bottom:1px solid rgba(0,0,0,.04);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+.tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
+.tag-ig{background:rgba(225,48,108,.1);color:#e1306c}
+.tag-fb{background:rgba(24,119,242,.1);color:#1877f2}
+.tag-reel{background:rgba(124,111,255,.1);color:var(--accent)}
+.tag-new{background:rgba(34,197,94,.1);color:var(--green)}
+.empty{text-align:center;padding:32px;color:var(--muted);font-size:13px}
+
+/* BEFORE AFTER */
+.ba-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center}
+.ba-side{background:var(--bg);border-radius:10px;padding:14px;text-align:center}
+.ba-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.ba-val{font-size:24px;font-weight:800}
+.ba-sub{font-size:11px;color:var(--muted);margin-top:3px}
+.ba-before .ba-val{color:var(--muted)}
+.ba-after .ba-val{color:var(--accent)}
+.ba-arrow{font-size:24px;color:var(--green)}
+.ba-change{text-align:center;font-size:12px;color:var(--green);font-weight:700}
+
+/* FOOTER */
+.footer{text-align:center;padding:28px;font-size:12px;color:var(--muted);border-top:1px solid var(--border);margin-top:8px}
+.footer strong{color:var(--accent)}
+
+/* PRINT / PDF */
+.print-btn{position:fixed;bottom:24px;right:24px;background:var(--dark);color:#fff;border:none;border-radius:12px;padding:12px 20px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 4px 20px rgba(0,0,0,.2);z-index:99;font-family:inherit}
+.print-btn:hover{background:#1a1a3a}
+@media print{.print-btn{display:none}.period-bar{display:none}}
+
+/* LIVE BADGE */
+.live-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--green)}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+@media(max-width:700px){
+  .grid-4{grid-template-columns:1fr 1fr}
+  .grid-2{grid-template-columns:1fr}
+  .grid-3{grid-template-columns:1fr 1fr}
+  .page{padding:16px}
+  .header{padding:20px 16px}
+  .ba-grid{grid-template-columns:1fr auto 1fr}
+}
+@media(max-width:420px){.grid-4{grid-template-columns:1fr 1fr}.grid-3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div class="logo">
+      <div class="logo-mark">JV</div>
+      <div class="logo-name">Powered by JayyVisualls</div>
+    </div>
+    <div class="report-badge">📊 Live Performance Report</div>
+  </div>
+  <div class="client-name" id="rpt-name">Atlas at Richland Road</div>
+  <div class="report-period">
+    <span class="live-badge"><span class="live-dot"></span> Live data</span>
+    &nbsp;·&nbsp; <span id="rpt-date"></span>
+  </div>
+</div>
+
+<div class="period-bar">
+  <button class="period-btn active" onclick="setPeriod(7,this)">Last 7 Days</button>
+  <button class="period-btn" onclick="setPeriod(30,this)">Last 30 Days</button>
+  <button class="period-btn" onclick="setPeriod(90,this)">Last 90 Days</button>
+  <button class="period-btn" onclick="setPeriod(0,this)">All Time</button>
+</div>
+
+<div class="page">
+  <!-- TOP STATS -->
+  <div class="grid-4" id="top-stats"></div>
+
+  <!-- BEFORE / AFTER -->
+  <div class="card" id="ba-card">
+    <div class="card-hd">
+      <span class="card-title">📈 Before vs. After JayyVisualls</span>
+      <span class="card-sub" id="ba-since"></span>
+    </div>
+    <div id="ba-rows"></div>
+  </div>
+
+  <!-- CHARTS -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-hd"><span class="card-title">Link Clicks Over Time</span></div>
+      <canvas id="chart-clicks" height="200"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-hd"><span class="card-title">Leads by Platform</span></div>
+      <canvas id="chart-leads" height="200"></canvas>
+    </div>
+  </div>
+
+  <!-- COMPETITOR COMPARISON -->
+  <div class="card" id="comp-card">
+    <div class="card-hd">
+      <span class="card-title">🏆 Market Comparison — Auburn Apartments</span>
+      <span class="card-sub">Instagram followers · updated by JayyVisualls</span>
+    </div>
+    <div id="comp-rows"></div>
+  </div>
+
+  <!-- LEADS TABLE -->
+  <div class="card">
+    <div class="card-hd">
+      <span class="card-title">📋 Leads Captured from Your Content</span>
+      <span class="card-sub" id="lead-count"></span>
+    </div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead><tr><th>Date</th><th>Name</th><th>Phone</th><th>Email</th><th>Interest</th><th>Source</th></tr></thead>
+        <tbody id="leads-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- CONVERSIONS -->
+  <div class="card">
+    <div class="card-hd"><span class="card-title">💰 Conversions & Revenue</span></div>
+    <div class="grid-3" id="conv-stats"></div>
+  </div>
+</div>
+
+<div class="footer">
+  Report generated by <strong>JayyVisualls</strong> · <span id="footer-date"></span><br>
+  Questions? Contact <strong>JayyVisualls</strong> to discuss your content strategy.
+</div>
+
+<button class="print-btn" onclick="window.print()">🖨️ Save as PDF</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+// ── CONFIG ─────────────────────────────────────────────
+const SUPABASE_URL      = 'YOUR_SUPABASE_URL';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+// ───────────────────────────────────────────────────────
+
+const urlParams  = new URLSearchParams(window.location.search);
+const CLIENT_ID  = urlParams.get('c') || 'atlas';
+
+// Pull from localStorage (shared with main app on same origin)
+let clients     = JSON.parse(localStorage.getItem('jv2_clients') || '[]');
+let links       = JSON.parse(localStorage.getItem('jv2_links') || '[]');
+let convs       = JSON.parse(localStorage.getItem('jv2_convs') || '[]');
+let clicksCache = JSON.parse(localStorage.getItem('jv2_clicks') || '{}');
+let competitors = JSON.parse(localStorage.getItem('jv2_competitors') || '[]');
+let beforeData  = JSON.parse(localStorage.getItem('jv2_before') || '{}');
+
+// Seed Atlas competitors
+if (!competitors.length) {
+  competitors = [
+    { id:'atlas',    name:'Atlas at Richland Road', followers:1906,  color:'#7c6fff', isClient:true },
+    { id:'edge',     name:'The Edge on Magnolia',   followers:1240,  color:'#94a3b8' },
+    { id:'station',  name:'The Station Auburn',     followers:3100,  color:'#94a3b8' },
+    { id:'collegiate',name:'Collegiate Suites',     followers:890,   color:'#94a3b8' },
+    { id:'lofts',    name:'The Lofts at Auburn',    followers:2200,  color:'#94a3b8' },
+  ];
+  localStorage.setItem('jv2_competitors', JSON.stringify(competitors));
+}
+
+let activePeriod = 7;
+let charts = {};
+
+function setPeriod(days, el) {
+  activePeriod = days;
+  document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  renderAll();
+}
+
+function filterByPeriod(items, dateKey) {
+  if (!activePeriod) return items;
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - activePeriod);
+  return items.filter(i => i[dateKey] && new Date(i[dateKey]) >= cutoff);
+}
+
+function getClicks(linkId) { return clicksCache[linkId] || 0; }
+
+const client = clients.find(c=>c.id===CLIENT_ID) || { name:'Atlas at Richland Road', color:'#7c6fff', ig:'@atlasatrichlandrd' };
+const clientLinks = links.filter(l=>l.clientId===CLIENT_ID);
+const clientConvs = convs.filter(c=>c.clientId===CLIENT_ID);
+
+async function fetchData() {
+  if (!SUPABASE_URL || SUPABASE_URL==='YOUR_SUPABASE_URL') return;
+  try {
+    // Fetch leads for this client
+    const lr = await fetch(
+      `${SUPABASE_URL}/rest/v1/leads?client=eq.${CLIENT_ID}&order=ts.desc`,
+      { headers:{ apikey:SUPABASE_ANON_KEY, Authorization:`Bearer ${SUPABASE_ANON_KEY}` } }
+    );
+    if (lr.ok) window._leads = await lr.json();
+
+    // Fetch click counts
+    const cr = await fetch(
+      `${SUPABASE_URL}/rest/v1/clicks?select=link_id&order=ts.desc`,
+      { headers:{ apikey:SUPABASE_ANON_KEY, Authorization:`Bearer ${SUPABASE_ANON_KEY}` } }
+    );
+    if (cr.ok) {
+      const rows = await cr.json();
+      const counts = {};
+      rows.forEach(r => { counts[r.link_id]=(counts[r.link_id]||0)+1; });
+      Object.assign(clicksCache, counts);
+      localStorage.setItem('jv2_clicks', JSON.stringify(clicksCache));
+    }
+  } catch(e) {}
+}
+
+function renderAll() {
+  const now = new Date();
+  document.getElementById('rpt-name').textContent = client.name;
+  document.getElementById('rpt-date').textContent = now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  document.getElementById('footer-date').textContent = now.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+
+  const leads = window._leads || [];
+  const filtLeads = filterByPeriod(leads, 'ts');
+  const filtLinks = clientLinks; // show all links always
+
+  const totalClicks = filtLinks.reduce((s,l)=>s+getClicks(l.id),0);
+  const totalLeads  = filtLeads.length;
+  const totalRev    = filterByPeriod(clientConvs,'date').reduce((s,c)=>s+(+c.revenue||0),0);
+  const leases      = filterByPeriod(clientConvs,'date').filter(c=>c.type==='lease').length;
+
+  // TOP STATS
+  document.getElementById('top-stats').innerHTML = `
+    <div class="stat"><div class="stat-label">Link Clicks</div><div class="stat-val">${fmt(totalClicks)}</div><div class="stat-sub">From your content</div></div>
+    <div class="stat"><div class="stat-label">Leads Captured</div><div class="stat-val" style="color:var(--accent)">${totalLeads}</div><div class="stat-sub">Name, phone & email</div></div>
+    <div class="stat"><div class="stat-label">Revenue</div><div class="stat-val" style="color:var(--green)">$${fmt(totalRev)}</div><div class="stat-sub">Attributed to content</div></div>
+    <div class="stat"><div class="stat-label">Leases Signed</div><div class="stat-val" style="color:#f59e0b">${leases}</div><div class="stat-sub">Via content funnel</div></div>
+  `;
+
+  // BEFORE / AFTER
+  const bData = beforeData[CLIENT_ID] || {};
+  const since = bData.since || 'the start of your campaign';
+  document.getElementById('ba-since').textContent = `Since ${since}`;
+  const baMetrics = [
+    { label:'Instagram Followers', before: bData.followers||0, after: bData.followersNow||1906, unit:'' },
+    { label:'Monthly Link Clicks', before: bData.clicks||0, after: totalClicks, unit:'' },
+    { label:'Leads per Month', before: bData.leads||0, after: totalLeads, unit:'' },
+  ];
+  document.getElementById('ba-rows').innerHTML = baMetrics.map(m => {
+    const pct = m.before > 0 ? Math.round((m.after-m.before)/m.before*100) : null;
+    return `<div style="margin-bottom:16px">
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">${m.label}</div>
+      <div class="ba-grid">
+        <div class="ba-side ba-before"><div class="ba-label">Before</div><div class="ba-val">${fmt(m.before)}${m.unit}</div></div>
+        <div style="text-align:center">
+          <div class="ba-arrow">→</div>
+          ${pct!==null ? `<div class="ba-change">+${pct}%</div>` : ''}
+        </div>
+        <div class="ba-side ba-after"><div class="ba-label">Now</div><div class="ba-val">${fmt(m.after)}${m.unit}</div></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // COMPETITOR COMPARISON
+  const maxF = Math.max(...competitors.map(c=>c.followers));
+  document.getElementById('comp-rows').innerHTML = [...competitors]
+    .sort((a,b)=>b.followers-a.followers)
+    .map(c => `
+      <div class="vs-row">
+        <div class="vs-name" style="color:${c.isClient?'var(--accent)':'var(--text)'};font-weight:${c.isClient?700:600}">${c.isClient?'★ ':''} ${c.name}</div>
+        <div class="vs-bar-wrap">
+          <div class="vs-bar ${c.isClient?'vs-you':'vs-comp'}" style="width:${Math.round(c.followers/maxF*100)}%">${c.followers>=500?fmt(c.followers)+' followers':''}</div>
+        </div>
+        <div class="vs-val" style="color:${c.isClient?'var(--accent)':'var(--muted)'}">${fmt(c.followers)}</div>
+      </div>
+    `).join('');
+
+  // LEADS TABLE
+  document.getElementById('lead-count').textContent = `${totalLeads} leads captured`;
+  const ltbody = document.getElementById('leads-tbody');
+  if (!filtLeads.length) {
+    ltbody.innerHTML = `<tr><td colspan="6" class="empty">No leads captured yet. Once your tracking links are live, leads will appear here automatically.</td></tr>`;
+  } else {
+    ltbody.innerHTML = filtLeads.slice(0,20).map(l => `<tr>
+      <td style="color:var(--muted)">${l.ts?l.ts.split('T')[0]:'—'}</td>
+      <td><strong>${l.name||'—'}</strong></td>
+      <td>${l.phone||'—'}</td>
+      <td style="color:var(--muted)">${l.email||'—'}</td>
+      <td><span class="tag tag-reel">${l.interest||'—'}</span></td>
+      <td><span class="tag tag-${l.platform==='instagram'?'ig':'fb'}">${cap(l.platform||'—')}</span></td>
+    </tr>`).join('');
+  }
+
+  // CONVERSIONS STATS
+  document.getElementById('conv-stats').innerHTML = `
+    <div class="stat"><div class="stat-label">Total Revenue</div><div class="stat-val" style="color:var(--green)">$${fmt(totalRev)}</div><div class="stat-sub">From content leads</div></div>
+    <div class="stat"><div class="stat-label">Leases Signed</div><div class="stat-val" style="color:var(--yellow)">${leases}</div><div class="stat-sub">Attributed to your content</div></div>
+    <div class="stat"><div class="stat-label">Tours Booked</div><div class="stat-val" style="color:var(--accent)">${filterByPeriod(clientConvs,'date').filter(c=>c.type==='tour').length}</div><div class="stat-sub">From your funnels</div></div>
+  `;
+
+  renderCharts(filtLeads);
+}
+
+function renderCharts(leads) {
+  Chart.defaults.color = '#6b6b8a';
+  Chart.defaults.borderColor = 'rgba(0,0,0,0.06)';
+
+  // Clicks over time
+  const mMap = {};
+  clientLinks.forEach(l => {
+    const m = l.date?l.date.slice(0,7):'';
+    if (m) mMap[m] = (mMap[m]||0)+getClicks(l.id);
+  });
+  const mKeys = Object.keys(mMap).sort();
+  buildChart('chart-clicks','line',
+    mKeys.length?mKeys:['No data'],
+    [{ label:'Clicks', data:mKeys.length?mKeys.map(k=>mMap[k]):[0], borderColor:'#7c6fff', backgroundColor:'rgba(124,111,255,0.08)', tension:0.4, fill:true }]
+  );
+
+  // Leads by platform
+  const pMap = {};
+  leads.forEach(l => { pMap[cap(l.platform||'Unknown')]=(pMap[cap(l.platform||'Unknown')]||0)+1; });
+  buildChart('chart-leads','doughnut',
+    Object.keys(pMap).length?Object.keys(pMap):['No leads yet'],
+    [{ data:Object.values(pMap).length?Object.values(pMap):[1], backgroundColor:['#e1306c','#1877f2','#7c6fff','#22c55e'], borderWidth:0 }],
+    { plugins:{ legend:{ position:'bottom' } } }
+  );
+}
+
+function buildChart(id,type,labels,datasets,extra={}) {
+  if (charts[id]) charts[id].destroy();
+  const ctx=document.getElementById(id);
+  if(!ctx)return;
+  charts[id]=new Chart(ctx,{type,data:{labels,datasets},options:{responsive:true,scales:type==='doughnut'?undefined:{y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.04)'}},x:{grid:{display:false}}},...extra}});
+}
+
+function fmt(n){if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return String(n||0)}
+function cap(s){return s?s.charAt(0).toUpperCase()+s.slice(1):''}
+
+// Init
+fetchData().then(renderAll);
+setInterval(()=>fetchData().then(renderAll), 30000);
+</script>
+</body>
+</html>

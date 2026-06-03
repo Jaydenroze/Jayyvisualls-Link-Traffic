@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Redirecting...</title>
+<style>
+  body{background:#080810;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;font-family:system-ui,sans-serif;flex-direction:column;gap:14px;color:#e4e4f0}
+  .spinner{width:32px;height:32px;border:3px solid #252535;border-top-color:#7c6fff;border-radius:50%;animation:spin .7s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  p{color:#5a5a7a;font-size:13px}
+</style>
+</head>
+<body>
+<div class="spinner"></div>
+<p>Taking you there...</p>
+<script>
+// ── CONFIG ───────────────────────────────────────────────────
+const SUPABASE_URL      = 'YOUR_SUPABASE_URL';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+const BASE_URL          = 'https://jaydenroze.github.io/Jayyvisualls-Link-Traffic';
+// ────────────────────────────────────────────────────────────
+
+const p       = new URLSearchParams(window.location.search);
+const linkId  = p.get('id')   || '';
+const dest    = p.get('dest') || '';
+const client  = p.get('c')    || '';
+const cname   = p.get('cn')   || '';
+const cloc    = p.get('cl')   || '';
+const platform= p.get('p')    || '';
+const type    = p.get('t')    || '';
+const capture = p.get('cap')  !== 'false'; // default: capture lead
+
+if (!dest) { document.querySelector('p').textContent='Invalid link.'; }
+else { go(); }
+
+async function go() {
+  // 1. Log click silently
+  if (SUPABASE_URL !== 'YOUR_SUPABASE_URL') {
+    fetch(`${SUPABASE_URL}/rest/v1/clicks`, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', apikey:SUPABASE_ANON_KEY, Authorization:`Bearer ${SUPABASE_ANON_KEY}`, Prefer:'return=minimal' },
+      body: JSON.stringify({ link_id:linkId, client, platform, type, dest, referrer:document.referrer||'direct', ua:navigator.userAgent, ts:new Date().toISOString() })
+    }).catch(()=>{});
+  }
+
+  // 2. Route to lead capture page (collects name/phone/email) then to dest
+  if (capture) {
+    const lp = new URLSearchParams({ c:client, lid:linkId, dest, cn:cname, cl:cloc, p:platform });
+    window.location.replace(`${BASE_URL}/lead.html?${lp.toString()}`);
+  } else {
+    window.location.replace(dest);
+  }
+}
+</script>
+</body>
+</html>
