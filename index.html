@@ -608,51 +608,103 @@ create policy "read_clicks" on clicks for select using (true);
 // STATE
 // ─────────────────────────────────────────────
 const BASE_URL = window.location.origin + '/Jayyvisualls-Link-Traffic';
-let clients      = JSON.parse(localStorage.getItem('jv2_clients') || '[]');
-let links        = JSON.parse(localStorage.getItem('jv2_links') || '[]');
-let conversions  = JSON.parse(localStorage.getItem('jv2_convs') || '[]');
-let clicksCache  = JSON.parse(localStorage.getItem('jv2_clicks') || '{}'); // {linkId: count}
+let clients     = [];
+let links       = [];
+let conversions = [];
+let clicksCache = {};
 let cfg = { url: localStorage.getItem('jv_sb_url')||'', key: localStorage.getItem('jv_sb_key')||'' };
 let autoTimer = null;
 let charts = {};
 
-// Seed Atlas
-if (!clients.length) {
-  clients = [{
-    id:'atlas', name:'Atlas at Richland Road', loc:'Auburn, AL',
-    niche:'Apartments', site:'https://www.atlasrichlandroad.com/',
-    ig:'@atlasatrichlandrd', retainer:0, color:'#7c6fff'
-  }];
-  save();
-}
-
-function save() {
-  localStorage.setItem('jv2_clients', JSON.stringify(clients));
-  localStorage.setItem('jv2_links', JSON.stringify(links));
-  localStorage.setItem('jv2_convs', JSON.stringify(conversions));
-  localStorage.setItem('jv2_clicks', JSON.stringify(clicksCache));
-}
-
 // ─────────────────────────────────────────────
-// SUPABASE
+// SUPABASE HELPERS
 // ─────────────────────────────────────────────
 function isConfigured() { return cfg.url && cfg.url !== 'YOUR_SUPABASE_URL' && cfg.key; }
 
-async function fetchClicks() {
+function sbHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'apikey': cfg.key,
+    'Authorization': `Bearer ${cfg.key}`,
+    'Prefer': 'return=minimal'
+  };
+}
+
+async function sbFetch(table, params='') {
+  if (!isConfigured()) return null;
+  try {
+    const r = await fetch(`${cfg.url}/rest/v1/${table}${params}`, {
+      headers: { apikey: cfg.key, Authorization: `Bearer ${cfg.key}` }
+    });
+    if (!r.ok) { console.warn('sbFetch error', table, r.status, await r.text()); return null; }
+    return await r.json();
+  } catch(e) { console.warn('sbFetch exception', table, e); return null; }
+}
+
+async function sbUpsert(table, data) {
   if (!isConfigured()) return;
   try {
-    const res = await fetch(
-      `${cfg.url}/rest/v1/clicks?select=link_id&order=ts.desc`,
-      { headers: { apikey: cfg.key, Authorization: `Bearer ${cfg.key}` } }
-    );
-    if (!res.ok) return;
-    const rows = await res.json();
-    // Count per link_id
+    await fetch(`${cfg.url}/rest/v1/${table}`, {
+      method: 'POST',
+      headers: { ...sbHeaders(), 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify(data)
+    });
+  } catch(e) { console.warn('sbUpsert error', table, e); }
+}
+
+async function sbDelete(table, col, val) {
+  if (!isConfigured()) return;
+  try {
+    await fetch(`${cfg.url}/rest/v1/${table}?${col}=eq.${encodeURIComponent(val)}`, {
+      method: 'DELETE',
+      headers: sbHeaders()
+    });
+  } catch(e) { console.warn('sbDelete error', table, e); }
+}
+
+// ─────────────────────────────────────────────
+// FETCH ALL DATA FROM SUPABASE
+// ─────────────────────────────────────────────
+async function fetchAll() {
+  if (!isConfigured()) return;
+  const [c, l, cv, cl] = await Promise.all([
+    sbFetch('jv_clients', '?order=created_at.asc'),
+    sbFetch('jv_links',   '?order=created_at.desc'),
+    sbFetch('jv_conversions', '?order=created_at.desc'),
+    sbFetch('clicks', '?select=link_id&order=ts.desc')
+  ]);
+  if (c)  clients     = c.map(r => ({ id:r.id, name:r.name, loc:r.loc, niche:r.niche, site:r.site, ig:r.ig, retainer:r.retainer||0, color:r.color||'#7c6fff' }));
+  if (l)  links       = l.map(r => ({ id:r.id, clientId:r.client_id, title:r.title, platform:r.platform, type:r.type, dest:r.dest, campaign:r.campaign, date:r.date, url:r.url }));
+  if (cv) conversions = cv.map(r => ({ id:r.id, clientId:r.client_id, linkId:r.link_id, type:r.type, revenue:r.revenue||0, date:r.date, notes:r.notes||'' }));
+  if (cl) {
     const counts = {};
-    rows.forEach(r => { counts[r.link_id] = (counts[r.link_id]||0) + 1; });
+    cl.forEach(r => { counts[r.link_id] = (counts[r.link_id]||0)+1; });
     clicksCache = counts;
-    save();
-  } catch(e) { console.warn('Supabase fetch error', e); }
+  }
+  // Cache locally for offline fallback
+  localStorage.setItem('jv2_clients', JSON.stringify(clients));
+  localStorage.setItem('jv2_links',   JSON.stringify(links));
+  localStorage.setItem('jv2_convs',   JSON.stringify(conversions));
+  localStorage.setItem('jv2_clicks',  JSON.stringify(clicksCache));
+}
+
+// Load from localStorage cache while Supabase loads
+function loadCache() {
+  clients     = JSON.parse(localStorage.getItem('jv2_clients') || '[]');
+  links       = JSON.parse(localStorage.getItem('jv2_links')   || '[]');
+  conversions = JSON.parse(localStorage.getItem('jv2_convs')   || '[]');
+  clicksCache = JSON.parse(localStorage.getItem('jv2_clicks')  || '{}');
+}
+
+async function fetchClicks() {
+  if (!isConfigured()) return;
+  const cl = await sbFetch('clicks', '?select=link_id&order=ts.desc');
+  if (cl) {
+    const counts = {};
+    cl.forEach(r => { counts[r.link_id] = (counts[r.link_id]||0)+1; });
+    clicksCache = counts;
+    localStorage.setItem('jv2_clicks', JSON.stringify(clicksCache));
+  }
 }
 
 // ── FETCH LEADS FROM SUPABASE ──────────────────────────────
@@ -719,7 +771,7 @@ function renderLeadsTab() {
 async function refresh() {
   const btn = document.getElementById('refresh-btn');
   btn.classList.add('spinning');
-  await Promise.all([fetchClicks(), fetchLeads()]);
+  await Promise.all([fetchAll(), fetchLeads()]);
   renderAll();
   btn.classList.remove('spinning');
 }
@@ -727,9 +779,9 @@ async function refresh() {
 function startAutoRefresh() {
   if (autoTimer) clearInterval(autoTimer);
   autoTimer = setInterval(async () => {
-    await Promise.all([fetchClicks(), fetchLeads()]);
+    await Promise.all([fetchAll(), fetchLeads()]);
     renderAll();
-  }, 30000); // every 30s
+  }, 30000);
 }
 
 function saveConfig() {
@@ -739,7 +791,7 @@ function saveConfig() {
   localStorage.setItem('jv_sb_key', cfg.key);
   renderSetupStatus();
   refresh();
-  alert('Connected! Your links will now track automatically.');
+  alert('Connected! Syncing all data across devices now.');
 }
 
 // ─────────────────────────────────────────────
@@ -905,12 +957,19 @@ function copyLink() {
   });
 }
 
-function saveLink() {
+async function saveLink() {
   if (!window._pendingLink) { alert('Generate a link first.'); return; }
   const p = window._pendingLink;
   if (links.find(l=>l.id===p.id)) { alert('Link already saved.'); return; }
-  links.push(p);
-  save(); renderAll();
+  // Save to Supabase
+  await sbUpsert('jv_links', {
+    id: p.id, client_id: p.clientId, title: p.title,
+    platform: p.platform, type: p.type, dest: p.dest,
+    campaign: p.campaign||'', date: p.date, url: p.url||''
+  });
+  // Refresh from Supabase so all devices see it
+  await fetchAll();
+  renderAll();
   alert('Saved!');
   clearGen();
 }
@@ -953,15 +1012,16 @@ function renderLinks() {
   }).join('');
 }
 
-function deleteLink(id) {
+async function deleteLink(id) {
   if (!confirm('Delete this link?')) return;
-  links = links.filter(l=>l.id!==id); save(); renderAll();
+  await sbDelete('jv_links', 'id', id);
+  await fetchAll(); renderAll();
 }
 
 // ─────────────────────────────────────────────
 // CONVERSIONS
 // ─────────────────────────────────────────────
-function logConversion() {
+async function logConversion() {
   const cid   = document.getElementById('cv-client').value;
   const lid   = document.getElementById('cv-link').value;
   const type  = document.getElementById('cv-type').value;
@@ -971,8 +1031,8 @@ function logConversion() {
 
   if (!cid) { alert('Select a client.'); return; }
 
-  conversions.push({ id:Date.now(), clientId:cid, linkId:lid, type, revenue:rev, date, notes });
-  save(); renderAll();
+  await sbUpsert('jv_conversions', { client_id:cid, link_id:lid||null, type, revenue:rev, date, notes });
+  await fetchAll(); renderAll();
   ['cv-client','cv-link','cv-type','cv-revenue','cv-date','cv-notes'].forEach(id=>{ const e=document.getElementById(id); if(e)e.value=''; });
   document.getElementById('cv-date').value = today();
   alert('Conversion logged!');
@@ -1007,9 +1067,10 @@ function renderConversions() {
   }).join('');
 }
 
-function deleteConv(id) {
+async function deleteConv(id) {
   if (!confirm('Delete this conversion?')) return;
-  conversions = conversions.filter(c=>c.id!==id); save(); renderAll();
+  await sbDelete('jv_conversions', 'id', id);
+  await fetchAll(); renderAll();
 }
 
 // ─────────────────────────────────────────────
@@ -1040,10 +1101,10 @@ function renderClients() {
   }).join('');
 }
 
-function saveClient() {
+async function saveClient() {
   const name = document.getElementById('m-name').value.trim();
   if (!name) { alert('Name required'); return; }
-  clients.push({
+  const newClient = {
     id: name.toLowerCase().replace(/[^a-z0-9]+/g,'-') + '-' + Date.now(),
     name, loc: document.getElementById('m-loc').value,
     niche: document.getElementById('m-niche').value,
@@ -1051,14 +1112,20 @@ function saveClient() {
     ig: document.getElementById('m-ig').value,
     retainer: +document.getElementById('m-retainer').value || 0,
     color: document.getElementById('m-color').value,
+  };
+  await sbUpsert('jv_clients', {
+    id: newClient.id, name: newClient.name, loc: newClient.loc,
+    niche: newClient.niche, site: newClient.site, ig: newClient.ig,
+    retainer: newClient.retainer, color: newClient.color
   });
-  save(); renderAll(); closeModal('modal-client');
+  await fetchAll(); renderAll(); closeModal('modal-client');
   ['m-name','m-loc','m-site','m-ig','m-retainer'].forEach(id=>document.getElementById(id).value='');
 }
 
-function deleteClient(id) {
+async function deleteClient(id) {
   if (!confirm('Remove client?')) return;
-  clients = clients.filter(c=>c.id!==id); save(); renderAll();
+  await sbDelete('jv_clients', 'id', id);
+  await fetchAll(); renderAll();
 }
 
 // ─────────────────────────────────────────────
@@ -1164,8 +1231,16 @@ function today() { return new Date().toISOString().split('T')[0]; }
 // ─────────────────────────────────────────────
 document.getElementById('g-date').value = today();
 document.getElementById('cv-date').value = today();
+// Load cached data immediately so UI isn't blank
+loadCache();
 renderAll();
-if (isConfigured()) { refresh(); startAutoRefresh(); }
+// Then fetch fresh data from Supabase
+if (isConfigured()) {
+  Promise.all([fetchAll(), fetchLeads()]).then(() => {
+    renderAll();
+    startAutoRefresh();
+  });
+}
 
 // Register service worker
 if ('serviceWorker' in navigator) {
