@@ -35,7 +35,7 @@ else { go(); }
 
 async function go() {
   // 1. Log click silently
-  if (SUPABASE_URL !== 'YOUR_SUPABASE_URL') {
+  if (SUPABASE_URL !== 'https://jaydenroze.github.io/Jayyvisualls-Link-Traffic') {
     fetch(`${SUPABASE_URL}/rest/v1/clicks`, {
       method:'POST',
       headers:{ 'Content-Type':'application/json', apikey:SUPABASE_ANON_KEY, Authorization:`Bearer ${SUPABASE_ANON_KEY}`, Prefer:'return=minimal' },
