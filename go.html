@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Redirecting...</title>
+<style>
+  body{background:#080810;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;font-family:system-ui,sans-serif;flex-direction:column;gap:14px;color:#e4e4f0}
+  .spinner{width:32px;height:32px;border:3px solid #252535;border-top-color:#7c6fff;border-radius:50%;animation:spin .7s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  p{color:#5a5a7a;font-size:13px}
+</style>
+</head>
+<body>
+<div class="spinner"></div>
+<p>Taking you there...</p>
+<script>
+// ── CONFIG ───────────────────────────────────────────────────
+const SUPABASE_URL      = 'https://xtwnhkszgiaigalivyth.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh0d25oa3N6Z2lhaWdhbGl2eXRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0NDc3MjYsImV4cCI6MjA5NjAyMzcyNn0.luyR5i5qhOqpDf_cHhy9hLZQFheZCMc4TWG30k2BwOE';
+const BASE_URL          = 'https://jaydenroze.github.io/Jayyvisualls-Link-Traffic';
+// ────────────────────────────────────────────────────────────
+
+const p       = new URLSearchParams(window.location.search);
+const linkId  = p.get('id')   || '';
+const dest    = p.get('dest') || '';
+const client  = p.get('c')    || '';
+const cname   = p.get('cn')   || '';
+const cloc    = p.get('cl')   || '';
+const platform= p.get('p')    || '';
+const type    = p.get('t')    || '';
+const capture = p.get('cap')  !== 'false'; // default: capture lead
+
+if (!dest) { document.querySelector('p').textContent='Invalid link.'; }
+else { go(); }
+
+async function go() {
+  const configured = SUPABASE_URL !== 'YOUR_SUPABASE_URL' && SUPABASE_URL !== '';
+
+  // 1. Log click silently (only if Supabase is configured)
+  if (configured) {
+    fetch(`${SUPABASE_URL}/rest/v1/clicks`, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', apikey:SUPABASE_ANON_KEY, Authorization:`Bearer ${SUPABASE_ANON_KEY}`, Prefer:'return=minimal' },
+      body: JSON.stringify({ link_id:linkId, client, platform, type, dest, referrer:document.referrer||'direct', ua:navigator.userAgent, ts:new Date().toISOString() })
+    }).catch(()=>{});
+  }
+
+  // 2. Route through lead capture only if Supabase is configured (otherwise go direct)
+  if (configured && capture) {
+    const lp = new URLSearchParams({ c:client, lid:linkId, dest, cn:cname, cl:cloc, p:platform });
+    window.location.replace(`${BASE_URL}/lead.html?${lp.toString()}`);
+  } else {
+    // Go straight to destination until Supabase is set up
+    window.location.replace(dest);
+  }
+}
+</script>
+</body>
+</html>
