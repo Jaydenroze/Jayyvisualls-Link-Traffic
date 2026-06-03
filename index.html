@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>JayyVisualls</title>
+
+<!-- PWA -->
+<link rel="manifest" href="/Jayyvisualls-Link-Traffic/manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="JayyVisualls">
+<link rel="apple-touch-icon" href="/Jayyvisualls-Link-Traffic/icons/icon-180.png">
+<meta name="theme-color" content="#080810">
+
+<style>
+:root {
+  --bg:#080810; --surf:#10101a; --card:#16161f; --card2:#1c1c28;
+  --border:#252535; --accent:#7c6fff; --green:#3dd68c; --red:#ff5c7c;
+  --yellow:#f9c74f; --blue:#4da6ff; --ig:#e1306c; --fb:#1877f2;
+  --text:#e4e4f0; --muted:#5a5a7a; --muted2:#3a3a55;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;overflow-x:hidden}
+
+/* TOPBAR */
+.topbar{
+  background:linear-gradient(90deg,#0d0d1a,#12122a);
+  border-bottom:1px solid var(--border);
+  padding:0 20px;
+  padding-top:max(0px,env(safe-area-inset-top));
+  display:flex;align-items:center;justify-content:space-between;
+  height:calc(58px + env(safe-area-inset-top));
+  position:sticky;top:0;z-index:50;
+}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-mark{
+  width:32px;height:32px;border-radius:8px;
+  background:linear-gradient(135deg,var(--accent),var(--ig));
+  display:flex;align-items:center;justify-content:center;
+  font-weight:900;font-size:13px;color:#fff;letter-spacing:-1px;
+}
+.brand-name{font-size:14px;font-weight:700}
+.brand-sub{font-size:10px;color:var(--muted)}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.refresh-btn{
+  background:var(--card);border:1px solid var(--border);color:var(--muted);
+  border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;
+  display:flex;align-items:center;gap:5px;transition:all .15s;
+}
+.refresh-btn:hover{border-color:var(--accent);color:var(--accent)}
+.refresh-btn.spinning svg{animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.live-dot{
+  width:7px;height:7px;border-radius:50%;background:var(--green);
+  animation:pulse 2s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* DESKTOP NAV */
+.nav{
+  background:var(--surf);border-bottom:1px solid var(--border);
+  display:flex;gap:2px;padding:0 20px;overflow-x:auto;
+}
+.nav-tab{
+  padding:12px 16px;font-size:13px;font-weight:600;color:var(--muted);
+  cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;
+  transition:all .15s;
+}
+.nav-tab:hover{color:var(--text)}
+.nav-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* MOBILE NAV */
+.mobile-nav{
+  display:none;position:fixed;bottom:0;left:0;right:0;
+  background:#13131f;border-top:1px solid var(--border);
+  padding-bottom:max(16px,env(safe-area-inset-bottom));
+  z-index:50;
+}
+.m-tab{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  padding:10px 4px 6px;font-size:9px;color:var(--muted);
+  cursor:pointer;gap:3px;border:none;background:none;transition:color .15s;
+}
+.m-tab.active{color:var(--accent)}
+.m-tab-icon{font-size:19px;line-height:1}
+
+/* PULL TO REFRESH */
+.ptr-indicator{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  height:0;overflow:hidden;transition:height .2s;
+  background:var(--surf);font-size:12px;color:var(--muted);
+}
+.ptr-indicator.visible{height:44px}
+
+/* PAGE */
+.page{padding:20px;max-width:1300px;margin:0 auto;padding-bottom:80px}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+
+/* GRIDS */
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px}
+
+/* STAT */
+.stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;position:relative;overflow:hidden}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.stat.c-accent::before{background:var(--accent)}
+.stat.c-green::before{background:var(--green)}
+.stat.c-red::before{background:var(--red)}
+.stat.c-yellow::before{background:var(--yellow)}
+.stat.c-blue::before{background:var(--blue)}
+.stat-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px}
+.stat-val{font-size:26px;font-weight:800;line-height:1}
+.stat-val.c-accent{color:var(--accent)}
+.stat-val.c-green{color:var(--green)}
+.stat-val.c-red{color:var(--red)}
+.stat-val.c-yellow{color:var(--yellow)}
+.stat-val.c-blue{color:var(--blue)}
+.stat-sub{font-size:10px;color:var(--muted);margin-top:4px}
+
+/* CARD */
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:16px}
+.card-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.card-title{font-size:13px;font-weight:700}
+.card-sub{font-size:11px;color:var(--muted)}
+
+/* FORM */
+.form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:10px}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg label{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+input,select,textarea{
+  background:var(--surf);border:1px solid var(--border);color:var(--text);
+  border-radius:8px;padding:8px 10px;font-size:13px;outline:none;
+  transition:border-color .15s;font-family:inherit;
+}
+input:focus,select:focus{border-color:var(--accent)}
+select option{background:#1a1a2a}
+
+/* BUTTONS */
+.btn{padding:8px 18px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:700;transition:all .15s;font-family:inherit}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:#6a5ee0}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn-green{background:rgba(61,214,140,.15);color:var(--green);border:1px solid rgba(61,214,140,.3)}
+.btn-danger{background:rgba(255,92,124,.12);color:var(--red);border:1px solid rgba(255,92,124,.25);font-size:11px;padding:4px 10px}
+.btn-sm{padding:5px 12px;font-size:11px}
+.btn-copy{padding:8px 12px;background:var(--card2);border:1px solid var(--border);color:var(--muted);border-radius:8px;cursor:pointer;font-size:11px;transition:all .15s;white-space:nowrap}
+.btn-copy:hover,.btn-copy.copied{border-color:var(--green);color:var(--green)}
+
+/* OUTPUT BOX */
+.output-box{background:#0a0a14;border:1px solid var(--border);border-radius:10px;padding:14px;margin-top:12px;display:none}
+.output-box.show{display:block}
+.out-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
+.out-url{font-family:monospace;font-size:12px;color:var(--green);word-break:break-all;line-height:1.6}
+.out-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.step-list{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+.step{display:flex;gap:8px;align-items:flex-start;font-size:12px;color:var(--muted)}
+.step-n{min-width:18px;height:18px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0;margin-top:1px}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:8px 10px;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:10px 10px;border-bottom:1px solid rgba(255,255,255,.03);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.015)}
+.empty-cell{text-align:center;padding:32px;color:var(--muted)}
+
+/* TAGS */
+.tag{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
+.tag-ig{background:rgba(225,48,108,.15);color:var(--ig)}
+.tag-fb{background:rgba(24,119,242,.15);color:var(--fb)}
+.tag-reel{background:rgba(124,111,255,.15);color:var(--accent)}
+.tag-post{background:rgba(249,199,79,.15);color:var(--yellow)}
+.tag-story{background:rgba(61,214,140,.15);color:var(--green)}
+.tag-conv{background:rgba(61,214,140,.2);color:var(--green)}
+.tag-lead{background:rgba(249,199,79,.2);color:var(--yellow)}
+.tag-click{background:rgba(124,111,255,.15);color:var(--accent)}
+
+/* PERF BAR */
+.pbar{height:5px;border-radius:3px;background:var(--border);overflow:hidden;margin-top:3px;min-width:60px}
+.pbar-fill{height:100%;border-radius:3px;transition:width .5s ease}
+
+/* ALERT */
+.alert{border-radius:10px;padding:11px 13px;font-size:12px;margin-bottom:14px;display:flex;gap:8px;align-items:flex-start;line-height:1.5}
+.alert-purple{background:rgba(124,111,255,.1);border:1px solid rgba(124,111,255,.2);color:#a89aff}
+.alert-green{background:rgba(61,214,140,.1);border:1px solid rgba(61,214,140,.2);color:var(--green)}
+.alert-yellow{background:rgba(249,199,79,.1);border:1px solid rgba(249,199,79,.2);color:var(--yellow)}
+.alert-red{background:rgba(255,92,124,.1);border:1px solid rgba(255,92,124,.2);color:var(--red)}
+
+/* CONVERSION CARD */
+.conv-card{
+  background:var(--card);border:1px solid var(--border);border-radius:12px;
+  padding:16px;display:flex;align-items:flex-start;gap:14px;margin-bottom:10px;
+}
+.conv-icon{font-size:28px;flex-shrink:0}
+.conv-title{font-size:13px;font-weight:700;margin-bottom:3px}
+.conv-meta{font-size:11px;color:var(--muted);line-height:1.5}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+.modal-overlay.show{display:flex}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px;width:100%;max-width:460px;max-height:90vh;overflow-y:auto}
+.modal-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.modal-title{font-size:14px;font-weight:700}
+.modal-x{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1}
+
+/* SETUP */
+.setup-step{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--border)}
+.setup-step:last-child{border-bottom:none}
+.setup-n{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--ig));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
+.setup-title{font-size:13px;font-weight:700;margin-bottom:3px}
+.setup-desc{font-size:12px;color:var(--muted);line-height:1.6}
+.code-block{background:#0a0a14;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-family:monospace;font-size:11px;color:var(--green);margin-top:6px;word-break:break-all}
+
+/* CONFIGURED STATE */
+.config-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.config-ok{background:rgba(61,214,140,.15);color:var(--green);border:1px solid rgba(61,214,140,.3)}
+.config-no{background:rgba(255,92,124,.15);color:var(--red);border:1px solid rgba(255,92,124,.3)}
+
+/* RESPONSIVE */
+@media(max-width:800px){
+  .grid-4{grid-template-columns:1fr 1fr}
+  .grid-2{grid-template-columns:1fr}
+  .grid-3{grid-template-columns:1fr 1fr}
+  .nav{display:none}
+  .mobile-nav{display:flex}
+  .page{padding:14px;padding-bottom:90px}
+  .stat-val{font-size:22px}
+}
+@media(max-width:480px){
+  .grid-4{grid-template-columns:1fr 1fr}
+  .grid-3{grid-template-columns:1fr}
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:var(--muted2);border-radius:3px}
+</style>
+</head>
+<body>
+
+<!-- PULL TO REFRESH -->
+<div class="ptr-indicator" id="ptr">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin .7s linear infinite"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg>
+  Refreshing...
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-mark">JV</div>
+    <div>
+      <div class="brand-name">JayyVisualls</div>
+      <div class="brand-sub">Traffic · Leads · Revenue</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="live-dot" id="live-dot" title="Live data"></div>
+    <button class="refresh-btn" id="refresh-btn" onclick="refresh()">
+      <svg id="refresh-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg>
+      Refresh
+    </button>
+    <button class="btn btn-primary btn-sm" onclick="showTab('generate')">+ Link</button>
+  </div>
+</div>
+
+<!-- DESKTOP NAV -->
+<div class="nav">
+  <div class="nav-tab active" id="nt-dashboard" onclick="showTab('dashboard')">📊 Dashboard</div>
+  <div class="nav-tab" id="nt-generate" onclick="showTab('generate')">🔗 New Link</div>
+  <div class="nav-tab" id="nt-links" onclick="showTab('links')">📋 Links</div>
+  <div class="nav-tab" id="nt-conversions" onclick="showTab('conversions')">💰 Conversions</div>
+  <div class="nav-tab" id="nt-clients" onclick="showTab('clients')">🏢 Clients</div>
+  <div class="nav-tab" id="nt-setup" onclick="showTab('setup')">⚙️ Setup</div>
+</div>
+
+<!-- PAGE -->
+<div class="page">
+
+  <!-- ── DASHBOARD ── -->
+  <div class="tab-pane active" id="tab-dashboard">
+    <div id="dash-alert"></div>
+    <div class="grid-4" id="dash-stats"></div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-hd"><span class="card-title">Clicks Over Time</span><span class="card-sub" id="time-label">All time</span></div>
+        <canvas id="chart-time" height="180"></canvas>
+      </div>
+      <div class="card">
+        <div class="card-hd"><span class="card-title">Platform Breakdown</span></div>
+        <canvas id="chart-platform" height="180"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hd">
+        <span class="card-title">🏆 Top Links</span>
+        <span class="card-sub">By click count · live</span>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Client</th><th>Post</th><th>Platform</th><th>Type</th><th>Clicks</th><th>Conversions</th><th>Date</th></tr></thead>
+          <tbody id="top-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── GENERATE ── -->
+  <div class="tab-pane" id="tab-generate">
+    <div class="alert alert-purple">
+      🔗 <div>Every link routes through <strong>your</strong> tracker page, logs the click automatically, then sends them to the client's site. No Bitly needed.</div>
+    </div>
+    <div class="card">
+      <div class="card-hd"><span class="card-title">Generate Tracking Link</span></div>
+      <div class="form-row">
+        <div class="fg"><label>Client</label>
+          <select id="g-client" onchange="prefillDest()">
+            <option value="">— Select —</option>
+          </select>
+        </div>
+        <div class="fg"><label>Platform</label>
+          <select id="g-platform">
+            <option value="instagram">Instagram</option>
+            <option value="facebook">Facebook</option>
+            <option value="tiktok">TikTok</option>
+            <option value="youtube">YouTube</option>
+          </select>
+        </div>
+        <div class="fg"><label>Content Type</label>
+          <select id="g-type">
+            <option value="reel">Reel</option>
+            <option value="post">Post / Carousel</option>
+            <option value="story">Story</option>
+            <option value="bio-link">Bio Link</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="fg" style="grid-column:span 2"><label>Destination URL</label>
+          <input type="url" id="g-dest" placeholder="https://www.atlasrichlandroad.com/" />
+        </div>
+        <div class="fg"><label>Post Title</label>
+          <input type="text" id="g-title" placeholder="e.g. Pool Reveal Walkthrough" />
+        </div>
+        <div class="fg"><label>Date</label>
+          <input type="date" id="g-date" />
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:6px">
+        <button class="btn btn-primary" onclick="generateLink()">Generate Link</button>
+        <button class="btn btn-ghost" onclick="clearGen()">Clear</button>
+      </div>
+
+      <div class="output-box" id="output-box">
+        <div class="out-label">Your Tracking URL (use this in your posts)</div>
+        <div class="out-url" id="out-url"></div>
+        <div class="out-actions">
+          <button class="btn-copy" id="copy-btn" onclick="copyLink()">📋 Copy Link</button>
+          <button class="btn btn-green btn-sm" onclick="saveLink()">💾 Save to Dashboard</button>
+        </div>
+        <div class="step-list">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:4px">How to use</div>
+          <div class="step"><div class="step-n">1</div><span>Copy the link above</span></div>
+          <div class="step"><div class="step-n">2</div><span>Paste it into your Instagram bio, caption, or story swipe-up</span></div>
+          <div class="step"><div class="step-n">3</div><span>Every click is logged automatically — check your dashboard anytime</span></div>
+          <div class="step"><div class="step-n">4</div><span>When the client confirms a lease, log a Conversion in the Conversions tab</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── LINKS ── -->
+  <div class="tab-pane" id="tab-links">
+    <div class="card-hd" style="margin-bottom:12px">
+      <span style="font-size:15px;font-weight:700">All Tracking Links</span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <select id="filter-client" style="padding:6px 8px;font-size:12px" onchange="renderLinks()">
+          <option value="">All Clients</option>
+        </select>
+        <select id="filter-platform" style="padding:6px 8px;font-size:12px" onchange="renderLinks()">
+          <option value="">All Platforms</option>
+          <option value="instagram">Instagram</option>
+          <option value="facebook">Facebook</option>
+          <option value="tiktok">TikTok</option>
+        </select>
+      </div>
+    </div>
+    <div class="card">
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Client</th><th>Post</th><th>Platform</th><th>Type</th><th>Clicks</th><th>Conversions</th><th>Revenue</th><th>Date</th><th></th></tr></thead>
+          <tbody id="links-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CONVERSIONS ── -->
+  <div class="tab-pane" id="tab-conversions">
+    <div class="alert alert-green">
+      💰 <div>Log a conversion every time a client confirms a lease/sale that came through your content. This is your ROI proof — ties revenue directly to specific posts.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-hd"><span class="card-title">Log New Conversion</span></div>
+      <div class="form-row">
+        <div class="fg"><label>Client</label>
+          <select id="cv-client">
+            <option value="">— Select —</option>
+          </select>
+        </div>
+        <div class="fg"><label>Link / Post that drove it</label>
+          <select id="cv-link">
+            <option value="">— Select link —</option>
+          </select>
+        </div>
+        <div class="fg"><label>Conversion Type</label>
+          <select id="cv-type">
+            <option value="lease">Lease Signed</option>
+            <option value="tour">Tour Scheduled</option>
+            <option value="inquiry">Inquiry / Form Fill</option>
+            <option value="sale">Sale</option>
+          </select>
+        </div>
+        <div class="fg"><label>Revenue Value ($)</label>
+          <input type="number" id="cv-revenue" placeholder="e.g. 14400" min="0" />
+        </div>
+        <div class="fg"><label>Date</label>
+          <input type="date" id="cv-date" />
+        </div>
+        <div class="fg"><label>Notes</label>
+          <input type="text" id="cv-notes" placeholder="e.g. Client said they found us on Instagram" />
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="logConversion()">Log Conversion</button>
+    </div>
+
+    <div class="grid-3" id="conv-stats"></div>
+
+    <div class="card">
+      <div class="card-hd"><span class="card-title">Conversion History</span></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Client</th><th>Type</th><th>Post / Link</th><th>Revenue</th><th>Notes</th><th></th></tr></thead>
+          <tbody id="conv-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CLIENTS ── -->
+  <div class="tab-pane" id="tab-clients">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <span style="font-size:15px;font-weight:700">Clients</span>
+      <button class="btn btn-primary" onclick="openModal('modal-client')">+ Add Client</button>
+    </div>
+    <div id="clients-grid" class="grid-3"></div>
+  </div>
+
+  <!-- ── SETUP ── -->
+  <div class="tab-pane" id="tab-setup">
+    <div id="setup-status"></div>
+    <div class="card">
+      <div class="card-hd"><span class="card-title">Connect Supabase (Free Real-Time Database)</span></div>
+
+      <div class="setup-step">
+        <div class="setup-n">1</div>
+        <div>
+          <div class="setup-title">Create a free Supabase account</div>
+          <div class="setup-desc">Go to <strong>supabase.com</strong> → Sign up free → Create a new project. Pick any name (e.g. "jayyvisualls"). Takes 2 minutes.</div>
+          <div class="code-block">→ supabase.com → New Project</div>
+        </div>
+      </div>
+
+      <div class="setup-step">
+        <div class="setup-n">2</div>
+        <div>
+          <div class="setup-title">Create the clicks table</div>
+          <div class="setup-desc">In Supabase → go to <strong>SQL Editor</strong> → paste and run this:</div>
+          <div class="code-block" id="sql-block" style="cursor:pointer" onclick="copySql()" title="Click to copy">
+create table clicks (<br>
+&nbsp;&nbsp;id bigserial primary key,<br>
+&nbsp;&nbsp;link_id text,<br>
+&nbsp;&nbsp;client text,<br>
+&nbsp;&nbsp;platform text,<br>
+&nbsp;&nbsp;type text,<br>
+&nbsp;&nbsp;dest text,<br>
+&nbsp;&nbsp;referrer text,<br>
+&nbsp;&nbsp;ua text,<br>
+&nbsp;&nbsp;ts timestamptz default now()<br>
+);<br><br>
+-- Allow public inserts (for tracker page)<br>
+alter table clicks enable row level security;<br>
+create policy "insert_clicks" on clicks for insert with check (true);<br>
+create policy "read_clicks" on clicks for select using (true);
+          </div>
+          <div style="margin-top:6px"><button class="btn-copy" onclick="copySql()">📋 Copy SQL</button></div>
+        </div>
+      </div>
+
+      <div class="setup-step">
+        <div class="setup-n">3</div>
+        <div>
+          <div class="setup-title">Get your API credentials</div>
+          <div class="setup-desc">In Supabase → <strong>Project Settings → API</strong> → copy your <strong>Project URL</strong> and <strong>anon public key</strong>. Paste them below:</div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
+            <div class="fg"><label>Supabase Project URL</label>
+              <input type="text" id="cfg-url" placeholder="https://xxxx.supabase.co" />
+            </div>
+            <div class="fg"><label>Supabase Anon Key</label>
+              <input type="text" id="cfg-key" placeholder="eyJhbGciOiJIUzI1NiIs..." />
+            </div>
+            <button class="btn btn-primary" style="width:fit-content" onclick="saveConfig()">Save & Connect</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="setup-step">
+        <div class="setup-n">4</div>
+        <div>
+          <div class="setup-title">Update go.html with your credentials</div>
+          <div class="setup-desc">Open <strong>go.html</strong> in your GitHub repo → edit the two lines at the top with your Supabase URL and key → commit. This makes every link click log automatically.</div>
+          <div class="code-block">const SUPABASE_URL = 'https://xxxx.supabase.co';<br>const SUPABASE_ANON_KEY = 'your-anon-key';</div>
+        </div>
+      </div>
+
+      <div class="setup-step">
+        <div class="setup-n">5</div>
+        <div>
+          <div class="setup-title">Done — your links now track in real time</div>
+          <div class="setup-desc">Every click on a generated link hits go.html → logs to Supabase → your dashboard pulls it automatically every 30 seconds. Pull down on mobile to refresh instantly.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<!-- MOBILE BOTTOM NAV -->
+<div class="mobile-nav">
+  <button class="m-tab active" id="mt-dashboard" onclick="showTab('dashboard')"><span class="m-tab-icon">📊</span>Dashboard</button>
+  <button class="m-tab" id="mt-generate" onclick="showTab('generate')"><span class="m-tab-icon">🔗</span>New Link</button>
+  <button class="m-tab" id="mt-links" onclick="showTab('links')"><span class="m-tab-icon">📋</span>Links</button>
+  <button class="m-tab" id="mt-conversions" onclick="showTab('conversions')"><span class="m-tab-icon">💰</span>Revenue</button>
+  <button class="m-tab" id="mt-setup" onclick="showTab('setup')"><span class="m-tab-icon">⚙️</span>Setup</button>
+</div>
+
+<!-- ADD CLIENT MODAL -->
+<div class="modal-overlay" id="modal-client">
+  <div class="modal">
+    <div class="modal-hd">
+      <span class="modal-title">Add Client</span>
+      <button class="modal-x" onclick="closeModal('modal-client')">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="fg"><label>Business Name</label><input type="text" id="m-name" placeholder="Atlas at Richland Road" /></div>
+      <div class="fg"><label>Location</label><input type="text" id="m-loc" placeholder="Auburn, AL" /></div>
+      <div class="fg"><label>Niche</label>
+        <select id="m-niche">
+          <option>Apartments</option><option>Restaurant</option><option>Fitness</option>
+          <option>Retail</option><option>Service</option><option>Entertainment</option><option>Other</option>
+        </select>
+      </div>
+      <div class="fg"><label>Website URL</label><input type="url" id="m-site" placeholder="https://..." /></div>
+      <div class="fg"><label>Instagram Handle</label><input type="text" id="m-ig" placeholder="@handle" /></div>
+      <div class="fg"><label>Monthly Retainer ($)</label><input type="number" id="m-retainer" placeholder="0" /></div>
+      <div class="fg"><label>Brand Color</label><input type="color" id="m-color" value="#7c6fff" /></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn btn-primary" onclick="saveClient()">Add Client</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-client')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+// ─────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────
+const BASE_URL = window.location.origin + '/Jayyvisualls-Link-Traffic';
+let clients      = JSON.parse(localStorage.getItem('jv2_clients') || '[]');
+let links        = JSON.parse(localStorage.getItem('jv2_links') || '[]');
+let conversions  = JSON.parse(localStorage.getItem('jv2_convs') || '[]');
+let clicksCache  = JSON.parse(localStorage.getItem('jv2_clicks') || '{}'); // {linkId: count}
+let cfg = { url: localStorage.getItem('jv_sb_url')||'', key: localStorage.getItem('jv_sb_key')||'' };
+let autoTimer = null;
+let charts = {};
+
+// Seed Atlas
+if (!clients.length) {
+  clients = [{
+    id:'atlas', name:'Atlas at Richland Road', loc:'Auburn, AL',
+    niche:'Apartments', site:'https://www.atlasrichlandroad.com/',
+    ig:'@atlasatrichlandrd', retainer:0, color:'#7c6fff'
+  }];
+  save();
+}
+
+function save() {
+  localStorage.setItem('jv2_clients', JSON.stringify(clients));
+  localStorage.setItem('jv2_links', JSON.stringify(links));
+  localStorage.setItem('jv2_convs', JSON.stringify(conversions));
+  localStorage.setItem('jv2_clicks', JSON.stringify(clicksCache));
+}
+
+// ─────────────────────────────────────────────
+// SUPABASE
+// ─────────────────────────────────────────────
+function isConfigured() { return cfg.url && cfg.url !== 'YOUR_SUPABASE_URL' && cfg.key; }
+
+async function fetchClicks() {
+  if (!isConfigured()) return;
+  try {
+    const res = await fetch(
+      `${cfg.url}/rest/v1/clicks?select=link_id&order=ts.desc`,
+      { headers: { apikey: cfg.key, Authorization: `Bearer ${cfg.key}` } }
+    );
+    if (!res.ok) return;
+    const rows = await res.json();
+    // Count per link_id
+    const counts = {};
+    rows.forEach(r => { counts[r.link_id] = (counts[r.link_id]||0) + 1; });
+    clicksCache = counts;
+    save();
+  } catch(e) { console.warn('Supabase fetch error', e); }
+}
+
+async function refresh() {
+  const btn = document.getElementById('refresh-btn');
+  btn.classList.add('spinning');
+  await fetchClicks();
+  renderAll();
+  btn.classList.remove('spinning');
+}
+
+function startAutoRefresh() {
+  if (autoTimer) clearInterval(autoTimer);
+  autoTimer = setInterval(async () => {
+    await fetchClicks();
+    renderAll();
+  }, 30000); // every 30s
+}
+
+function saveConfig() {
+  cfg.url = document.getElementById('cfg-url').value.trim().replace(/\/$/,'');
+  cfg.key = document.getElementById('cfg-key').value.trim();
+  localStorage.setItem('jv_sb_url', cfg.url);
+  localStorage.setItem('jv_sb_key', cfg.key);
+  renderSetupStatus();
+  refresh();
+  alert('Connected! Your links will now track automatically.');
+}
+
+// ─────────────────────────────────────────────
+// TAB NAV
+// ─────────────────────────────────────────────
+function showTab(name) {
+  document.querySelectorAll('.tab-pane').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.m-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  const nt = document.getElementById('nt-' + name);
+  const mt = document.getElementById('mt-' + name);
+  if (nt) nt.classList.add('active');
+  if (mt) mt.classList.add('active');
+  renderAll();
+}
+
+// ─────────────────────────────────────────────
+// RENDER ALL
+// ─────────────────────────────────────────────
+function renderAll() {
+  renderDashboard();
+  renderLinks();
+  renderConversions();
+  renderClients();
+  renderSetupStatus();
+  populateDropdowns();
+}
+
+// ─────────────────────────────────────────────
+// DASHBOARD
+// ─────────────────────────────────────────────
+function getClicks(linkId) { return clicksCache[linkId] || 0; }
+function totalClicks() { return links.reduce((s,l) => s+getClicks(l.id),0); }
+function totalConvRevenue() { return conversions.reduce((s,c) => s+(+c.revenue||0),0); }
+
+function renderDashboard() {
+  const tc = totalClicks();
+  const tconv = conversions.length;
+  const trev = totalConvRevenue();
+  const topLink = links.length ? [...links].sort((a,b)=>getClicks(b.id)-getClicks(a.id))[0] : null;
+
+  // Alert if not configured
+  document.getElementById('dash-alert').innerHTML = isConfigured()
+    ? '' : `<div class="alert alert-yellow">⚠️ <div>Supabase not connected — click counts are <strong>0</strong> until you set it up in the <strong>Setup</strong> tab. Links still work, just not tracked yet.</div></div>`;
+
+  document.getElementById('dash-stats').innerHTML = `
+    <div class="stat c-accent"><div class="stat-label">Total Clicks</div><div class="stat-val c-accent">${fmt(tc)}</div><div class="stat-sub">Across all links · live</div></div>
+    <div class="stat c-green"><div class="stat-label">Conversions</div><div class="stat-val c-green">${tconv}</div><div class="stat-sub">Logged by you</div></div>
+    <div class="stat c-yellow"><div class="stat-label">Revenue Attributed</div><div class="stat-val c-yellow">$${fmt(trev)}</div><div class="stat-sub">From your content</div></div>
+    <div class="stat c-blue"><div class="stat-label">Active Links</div><div class="stat-val c-blue">${links.length}</div><div class="stat-sub">${[...new Set(links.map(l=>l.clientId))].length} client${[...new Set(links.map(l=>l.clientId))].length!==1?'s':''}</div></div>
+  `;
+
+  // Top links table
+  const sorted = [...links].sort((a,b)=>getClicks(b.id)-getClicks(a.id)).slice(0,8);
+  const maxC = sorted.length ? (getClicks(sorted[0].id)||1) : 1;
+  const tbody = document.getElementById('top-tbody');
+  if (!sorted.length) { tbody.innerHTML = `<tr><td colspan="8" class="empty-cell">No links yet — go to New Link to create your first tracking link.</td></tr>`; }
+  else tbody.innerHTML = sorted.map((l,i) => {
+    const cl = clients.find(c=>c.id===l.clientId)||{};
+    const clicks = getClicks(l.id);
+    const convs = conversions.filter(c=>c.linkId===l.id).length;
+    const pct = Math.round(clicks/maxC*100);
+    return `<tr>
+      <td style="color:var(--muted);font-weight:700">#${i+1}</td>
+      <td><span style="color:${cl.color||'var(--accent)'}">●</span> ${cl.name||l.clientId}</td>
+      <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.title}</td>
+      <td><span class="tag tag-${l.platform==='instagram'?'ig':'fb'}">${cap(l.platform)}</span></td>
+      <td><span class="tag tag-reel">${cap(l.type)}</span></td>
+      <td><strong>${fmt(clicks)}</strong><div class="pbar"><div class="pbar-fill" style="width:${pct}%;background:${cl.color||'var(--accent)'}"></div></div></td>
+      <td>${convs > 0 ? `<span class="tag tag-conv">✓ ${convs}</span>` : '<span style="color:var(--muted)">—</span>'}</td>
+      <td style="color:var(--muted)">${l.date||'—'}</td>
+    </tr>`;
+  }).join('');
+
+  renderCharts();
+}
+
+// ─────────────────────────────────────────────
+// CHARTS
+// ─────────────────────────────────────────────
+function renderCharts() {
+  Chart.defaults.color = '#5a5a7a';
+  Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
+
+  // Time chart — by month
+  const mMap = {};
+  links.forEach(l => {
+    const m = l.date ? l.date.slice(0,7) : 'unknown';
+    mMap[m] = (mMap[m]||0) + getClicks(l.id);
+  });
+  const mKeys = Object.keys(mMap).sort();
+  buildChart('chart-time','line',
+    mKeys.length ? mKeys : ['No data'],
+    [{ label:'Clicks', data: mKeys.length ? mKeys.map(k=>mMap[k]) : [0],
+       borderColor:'#7c6fff', backgroundColor:'rgba(124,111,255,0.1)',
+       tension:0.4, fill:true, pointBackgroundColor:'#7c6fff' }]
+  );
+
+  // Platform pie
+  const pMap = {};
+  links.forEach(l => { pMap[cap(l.platform||'Unknown')] = (pMap[cap(l.platform||'Unknown')]||0)+getClicks(l.id); });
+  buildChart('chart-platform','doughnut',
+    Object.keys(pMap).length ? Object.keys(pMap) : ['No data'],
+    [{ data: Object.values(pMap).length ? Object.values(pMap) : [1],
+       backgroundColor:['#e1306c','#1877f2','#3dd68c','#f9c74f','#7c6fff'], borderWidth:0 }],
+    { plugins:{ legend:{ position:'bottom', labels:{ font:{ size:11 } } } } }
+  );
+}
+
+function buildChart(id, type, labels, datasets, extra={}) {
+  if (charts[id]) charts[id].destroy();
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  charts[id] = new Chart(ctx, {
+    type, data:{ labels, datasets },
+    options:{ responsive:true, scales: type==='doughnut'?undefined:{
+      y:{ beginAtZero:true, grid:{ color:'rgba(255,255,255,0.04)' } },
+      x:{ grid:{ display:false } }
+    }, ...extra }
+  });
+}
+
+// ─────────────────────────────────────────────
+// LINK GENERATOR
+// ─────────────────────────────────────────────
+function prefillDest() {
+  const c = clients.find(x=>x.id===document.getElementById('g-client').value);
+  if (c && c.site) document.getElementById('g-dest').value = c.site;
+  populateLinkDropdown();
+}
+
+function generateLink() {
+  const cid   = document.getElementById('g-client').value;
+  const dest  = document.getElementById('g-dest').value.trim();
+  const plat  = document.getElementById('g-platform').value;
+  const type  = document.getElementById('g-type').value;
+  const title = document.getElementById('g-title').value.trim();
+  const date  = document.getElementById('g-date').value || today();
+
+  if (!cid)  { alert('Select a client.'); return; }
+  if (!dest) { alert('Enter a destination URL.'); return; }
+  if (!title){ alert('Enter a post title.'); return; }
+
+  const client = clients.find(c=>c.id===cid)||{};
+  const slug = (client.id||'client') + '-' + title.toLowerCase().replace(/[^a-z0-9]+/g,'-').slice(0,24) + '-' + date;
+  const params = new URLSearchParams({ id:slug, dest, c:cid, p:plat, t:type });
+  const url = `${BASE_URL}/go.html?${params.toString()}`;
+
+  document.getElementById('out-url').textContent = url;
+  document.getElementById('output-box').classList.add('show');
+  document.getElementById('copy-btn').textContent = '📋 Copy Link';
+  document.getElementById('copy-btn').classList.remove('copied');
+  window._pendingLink = { id:slug, clientId:cid, title, platform:plat, type, dest, date, url };
+}
+
+function copyLink() {
+  navigator.clipboard.writeText(document.getElementById('out-url').textContent).then(() => {
+    const b = document.getElementById('copy-btn');
+    b.textContent = '✓ Copied!'; b.classList.add('copied');
+    setTimeout(()=>{ b.textContent='📋 Copy Link'; b.classList.remove('copied'); }, 2000);
+  });
+}
+
+function saveLink() {
+  if (!window._pendingLink) { alert('Generate a link first.'); return; }
+  const p = window._pendingLink;
+  if (links.find(l=>l.id===p.id)) { alert('Link already saved.'); return; }
+  links.push(p);
+  save(); renderAll();
+  alert('Saved!');
+  clearGen();
+}
+
+function clearGen() {
+  ['g-client','g-platform','g-type','g-dest','g-title'].forEach(id=>{ const e=document.getElementById(id); if(e)e.value=''; });
+  document.getElementById('g-date').value = today();
+  document.getElementById('output-box').classList.remove('show');
+  window._pendingLink = null;
+}
+
+// ─────────────────────────────────────────────
+// LINKS TABLE
+// ─────────────────────────────────────────────
+function renderLinks() {
+  const fc = document.getElementById('filter-client')?.value||'';
+  const fp = document.getElementById('filter-platform')?.value||'';
+  const filtered = links.filter(l=>(!fc||l.clientId===fc)&&(!fp||l.platform===fp))
+    .sort((a,b)=>getClicks(b.id)-getClicks(a.id));
+
+  const tbody = document.getElementById('links-tbody');
+  if (!filtered.length) { tbody.innerHTML=`<tr><td colspan="9" class="empty-cell">No links yet.</td></tr>`; return; }
+  const maxC = getClicks(filtered[0]?.id)||1;
+  tbody.innerHTML = filtered.map(l => {
+    const cl = clients.find(c=>c.id===l.clientId)||{};
+    const clicks = getClicks(l.id);
+    const convs = conversions.filter(c=>c.linkId===l.id);
+    const rev = convs.reduce((s,c)=>s+(+c.revenue||0),0);
+    return `<tr>
+      <td><span style="color:${cl.color||'var(--accent)'}">●</span> ${cl.name||l.clientId}</td>
+      <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.title}</td>
+      <td><span class="tag tag-${l.platform==='instagram'?'ig':'fb'}">${cap(l.platform)}</span></td>
+      <td><span class="tag tag-reel">${cap(l.type)}</span></td>
+      <td><strong>${fmt(clicks)}</strong><div class="pbar"><div class="pbar-fill" style="width:${Math.round(clicks/maxC*100)}%;background:${cl.color||'var(--accent)'}"></div></div></td>
+      <td>${convs.length > 0 ? `<span class="tag tag-conv">${convs.length}</span>` : '—'}</td>
+      <td>${rev > 0 ? `<span style="color:var(--green)">$${fmt(rev)}</span>` : '—'}</td>
+      <td style="color:var(--muted)">${l.date||'—'}</td>
+      <td><button class="btn-danger" onclick="deleteLink('${l.id}')">✕</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function deleteLink(id) {
+  if (!confirm('Delete this link?')) return;
+  links = links.filter(l=>l.id!==id); save(); renderAll();
+}
+
+// ─────────────────────────────────────────────
+// CONVERSIONS
+// ─────────────────────────────────────────────
+function logConversion() {
+  const cid   = document.getElementById('cv-client').value;
+  const lid   = document.getElementById('cv-link').value;
+  const type  = document.getElementById('cv-type').value;
+  const rev   = +document.getElementById('cv-revenue').value || 0;
+  const date  = document.getElementById('cv-date').value || today();
+  const notes = document.getElementById('cv-notes').value;
+
+  if (!cid) { alert('Select a client.'); return; }
+
+  conversions.push({ id:Date.now(), clientId:cid, linkId:lid, type, revenue:rev, date, notes });
+  save(); renderAll();
+  ['cv-client','cv-link','cv-type','cv-revenue','cv-date','cv-notes'].forEach(id=>{ const e=document.getElementById(id); if(e)e.value=''; });
+  document.getElementById('cv-date').value = today();
+  alert('Conversion logged!');
+}
+
+function renderConversions() {
+  // Stats
+  const totalRev = conversions.reduce((s,c)=>s+(+c.revenue||0),0);
+  const leases   = conversions.filter(c=>c.type==='lease').length;
+  const tours    = conversions.filter(c=>c.type==='tour').length;
+  document.getElementById('conv-stats').innerHTML = `
+    <div class="stat c-green"><div class="stat-label">Total Revenue</div><div class="stat-val c-green">$${fmt(totalRev)}</div><div class="stat-sub">Attributed to your content</div></div>
+    <div class="stat c-yellow"><div class="stat-label">Leases Signed</div><div class="stat-val c-yellow">${leases}</div><div class="stat-sub">From your content</div></div>
+    <div class="stat c-blue"><div class="stat-label">Tours Booked</div><div class="stat-val c-blue">${tours}</div><div class="stat-sub">Tracked inquiries</div></div>
+  `;
+
+  // Table
+  const tbody = document.getElementById('conv-tbody');
+  if (!conversions.length) { tbody.innerHTML=`<tr><td colspan="7" class="empty-cell">No conversions yet. Log one when a client confirms a lease or inquiry.</td></tr>`; return; }
+  tbody.innerHTML = [...conversions].reverse().map(c => {
+    const cl = clients.find(x=>x.id===c.clientId)||{};
+    const lnk = links.find(l=>l.id===c.linkId);
+    return `<tr>
+      <td style="color:var(--muted)">${c.date}</td>
+      <td><span style="color:${cl.color||'var(--accent)'}">●</span> ${cl.name||c.clientId}</td>
+      <td><span class="tag ${c.type==='lease'?'tag-conv':c.type==='tour'?'tag-lead':'tag-click'}">${cap(c.type)}</span></td>
+      <td style="color:var(--muted)">${lnk?lnk.title:'—'}</td>
+      <td style="color:var(--green)">${c.revenue>0?'$'+fmt(+c.revenue):'—'}</td>
+      <td style="color:var(--muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.notes||'—'}</td>
+      <td><button class="btn-danger" onclick="deleteConv(${c.id})">✕</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function deleteConv(id) {
+  if (!confirm('Delete this conversion?')) return;
+  conversions = conversions.filter(c=>c.id!==id); save(); renderAll();
+}
+
+// ─────────────────────────────────────────────
+// CLIENTS
+// ─────────────────────────────────────────────
+function renderClients() {
+  const grid = document.getElementById('clients-grid');
+  if (!clients.length) { grid.innerHTML='<div style="color:var(--muted)">No clients yet.</div>'; return; }
+  grid.innerHTML = clients.map(c => {
+    const cl = links.filter(l=>l.clientId===c.id);
+    const tc = cl.reduce((s,l)=>s+getClicks(l.id),0);
+    const tr = conversions.filter(x=>x.clientId===c.id).reduce((s,x)=>s+(+x.revenue||0),0);
+    return `<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:38px;height:38px;border-radius:9px;background:linear-gradient(135deg,${c.color},${c.color}88);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;color:#fff;flex-shrink:0">${c.name[0]}</div>
+        <div>
+          <div style="font-size:13px;font-weight:700">${c.name}</div>
+          <div style="font-size:11px;color:var(--muted)">${c.loc} · ${c.niche}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;font-size:12px">
+        <div><span style="font-weight:700;color:var(--accent)">${fmt(tc)}</span> <span style="color:var(--muted)">clicks</span></div>
+        <div><span style="font-weight:700;color:var(--green)">$${fmt(tr)}</span> <span style="color:var(--muted)">revenue</span></div>
+        <div><span style="font-weight:700">${cl.length}</span> <span style="color:var(--muted)">links</span></div>
+      </div>
+      <button class="btn-danger" onclick="deleteClient('${c.id}')" style="width:fit-content">Remove</button>
+    </div>`;
+  }).join('');
+}
+
+function saveClient() {
+  const name = document.getElementById('m-name').value.trim();
+  if (!name) { alert('Name required'); return; }
+  clients.push({
+    id: name.toLowerCase().replace(/[^a-z0-9]+/g,'-') + '-' + Date.now(),
+    name, loc: document.getElementById('m-loc').value,
+    niche: document.getElementById('m-niche').value,
+    site: document.getElementById('m-site').value,
+    ig: document.getElementById('m-ig').value,
+    retainer: +document.getElementById('m-retainer').value || 0,
+    color: document.getElementById('m-color').value,
+  });
+  save(); renderAll(); closeModal('modal-client');
+  ['m-name','m-loc','m-site','m-ig','m-retainer'].forEach(id=>document.getElementById(id).value='');
+}
+
+function deleteClient(id) {
+  if (!confirm('Remove client?')) return;
+  clients = clients.filter(c=>c.id!==id); save(); renderAll();
+}
+
+// ─────────────────────────────────────────────
+// SETUP STATUS
+// ─────────────────────────────────────────────
+function renderSetupStatus() {
+  const el = document.getElementById('setup-status');
+  if (!el) return;
+  if (isConfigured()) {
+    el.innerHTML = `<div class="alert alert-green">✅ <div><strong>Supabase connected.</strong> Clicks are tracking in real time. Dashboard auto-refreshes every 30 seconds.</div></div>`;
+    document.getElementById('cfg-url').value = cfg.url;
+    document.getElementById('cfg-key').value = cfg.key;
+  } else {
+    el.innerHTML = `<div class="alert alert-yellow">⚠️ <div><strong>Not connected yet.</strong> Follow the steps below to activate real-time click tracking.</div></div>`;
+  }
+}
+
+// ─────────────────────────────────────────────
+// DROPDOWNS
+// ─────────────────────────────────────────────
+function populateDropdowns() {
+  ['g-client','cv-client','filter-client'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const cur = el.value;
+    el.innerHTML = id==='filter-client' ? '<option value="">All Clients</option>' : '<option value="">— Select —</option>';
+    clients.forEach(c => {
+      const o = document.createElement('option');
+      o.value=c.id; o.textContent=c.name;
+      if (c.id===cur) o.selected=true;
+      el.appendChild(o);
+    });
+  });
+  populateLinkDropdown();
+}
+
+function populateLinkDropdown() {
+  const cid = document.getElementById('cv-client')?.value||'';
+  const el = document.getElementById('cv-link');
+  if (!el) return;
+  const cur = el.value;
+  el.innerHTML = '<option value="">— Select link (optional) —</option>';
+  links.filter(l=>!cid||l.clientId===cid).forEach(l => {
+    const o=document.createElement('option');
+    o.value=l.id; o.textContent=l.title;
+    if(l.id===cur)o.selected=true;
+    el.appendChild(o);
+  });
+}
+
+// ─────────────────────────────────────────────
+// PULL TO REFRESH
+// ─────────────────────────────────────────────
+let ptrStartY = 0, ptrActive = false;
+document.addEventListener('touchstart', e => { ptrStartY = e.touches[0].clientY; }, { passive:true });
+document.addEventListener('touchmove', e => {
+  if (window.scrollY === 0 && e.touches[0].clientY - ptrStartY > 60) {
+    document.getElementById('ptr').classList.add('visible');
+    ptrActive = true;
+  }
+}, { passive:true });
+document.addEventListener('touchend', async () => {
+  if (ptrActive) { ptrActive=false; await refresh(); document.getElementById('ptr').classList.remove('visible'); }
+});
+
+// ─────────────────────────────────────────────
+// MODAL
+// ─────────────────────────────────────────────
+function openModal(id)  { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if(e.target===m) m.classList.remove('show'); }));
+
+// ─────────────────────────────────────────────
+// SQL COPY
+// ─────────────────────────────────────────────
+function copySql() {
+  const sql = `create table clicks (
+  id bigserial primary key,
+  link_id text,
+  client text,
+  platform text,
+  type text,
+  dest text,
+  referrer text,
+  ua text,
+  ts timestamptz default now()
+);
+alter table clicks enable row level security;
+create policy "insert_clicks" on clicks for insert with check (true);
+create policy "read_clicks" on clicks for select using (true);`;
+  navigator.clipboard.writeText(sql).then(() => alert('SQL copied!'));
+}
+
+// ─────────────────────────────────────────────
+// HELPERS
+// ─────────────────────────────────────────────
+function fmt(n) { if(n>=1e6)return(n/1e6).toFixed(1)+'M'; if(n>=1e3)return(n/1e3).toFixed(1)+'K'; return String(n); }
+function cap(s) { return s?s.charAt(0).toUpperCase()+s.slice(1):''; }
+function today() { return new Date().toISOString().split('T')[0]; }
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+document.getElementById('g-date').value = today();
+document.getElementById('cv-date').value = today();
+renderAll();
+if (isConfigured()) { refresh(); startAutoRefresh(); }
+
+// Register service worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/Jayyvisualls-Link-Traffic/sw.js');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JayyVisualls — Redirecting...</title>
+<style>
+  body {
+    background: #080810; color: #e4e4f0;
+    font-family: system-ui, sans-serif;
+    display: flex; align-items: center; justify-content: center;
+    height: 100vh; margin: 0; flex-direction: column; gap: 16px;
+  }
+  .spinner {
+    width: 36px; height: 36px; border: 3px solid #252535;
+    border-top-color: #7c6fff; border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  p { color: #5a5a7a; font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="spinner"></div>
+<p>Taking you there...</p>
+
+<script>
+// ── CONFIG: paste your Supabase URL + anon key here ──────────────
+const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+// ─────────────────────────────────────────────────────────────────
+
+async function trackAndRedirect() {
+  const params = new URLSearchParams(window.location.search);
+  const linkId  = params.get('id')   || '';
+  const dest    = params.get('dest') || '';
+  const client  = params.get('c')    || '';
+  const platform= params.get('p')    || '';
+  const type    = params.get('t')    || '';
+
+  if (!dest) {
+    document.querySelector('p').textContent = 'Invalid link.';
+    return;
+  }
+
+  // Log the click to Supabase
+  if (SUPABASE_URL !== 'YOUR_SUPABASE_URL') {
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/clicks`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'Prefer': 'return=minimal',
+        },
+        body: JSON.stringify({
+          link_id:  linkId,
+          client:   client,
+          platform: platform,
+          type:     type,
+          dest:     dest,
+          referrer: document.referrer || 'direct',
+          ua:       navigator.userAgent,
+          ts:       new Date().toISOString(),
+        }),
+      });
+    } catch (e) {
+      // silently fail — don't block redirect
+    }
+  }
+
+  // Redirect immediately
+  window.location.replace(dest);
+}
+
+trackAndRedirect();
+</script>
+</body>
+</html>
