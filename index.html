@@ -275,6 +275,7 @@ tr:hover td{background:rgba(255,255,255,.015)}
   <div class="nav-tab active" id="nt-dashboard" onclick="showTab('dashboard')">📊 Dashboard</div>
   <div class="nav-tab" id="nt-generate" onclick="showTab('generate')">🔗 New Link</div>
   <div class="nav-tab" id="nt-links" onclick="showTab('links')">📋 Links</div>
+  <div class="nav-tab" id="nt-leads" onclick="showTab('leads')">👥 Leads</div>
   <div class="nav-tab" id="nt-conversions" onclick="showTab('conversions')">💰 Conversions</div>
   <div class="nav-tab" id="nt-clients" onclick="showTab('clients')">🏢 Clients</div>
   <div class="nav-tab" id="nt-setup" onclick="showTab('setup')">⚙️ Setup</div>
@@ -396,6 +397,28 @@ tr:hover td{background:rgba(255,255,255,.015)}
         <table>
           <thead><tr><th>Client</th><th>Post</th><th>Platform</th><th>Type</th><th>Clicks</th><th>Conversions</th><th>Revenue</th><th>Date</th><th></th></tr></thead>
           <tbody id="links-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── LEADS ── -->
+  <div class="tab-pane" id="tab-leads">
+    <div class="grid-4" id="leads-stats"></div>
+    <div class="card">
+      <div class="card-hd">
+        <span class="card-title">👥 All Leads — Auto-tracked from your forms</span>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <select id="leads-filter-client" style="padding:6px 8px;font-size:12px" onchange="renderLeadsTab()">
+            <option value="">All Clients</option>
+          </select>
+          <button class="btn btn-green btn-sm" onclick="refresh()">↻ Refresh</button>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Client</th><th>Name</th><th>Phone</th><th>Email</th><th>Interest</th><th>Platform</th><th>Source Link</th></tr></thead>
+          <tbody id="leads-tbody"></tbody>
         </table>
       </div>
     </div>
@@ -546,7 +569,7 @@ create policy "read_clicks" on clicks for select using (true);
 <div class="mobile-nav">
   <button class="m-tab active" id="mt-dashboard" onclick="showTab('dashboard')"><span class="m-tab-icon">📊</span>Dashboard</button>
   <button class="m-tab" id="mt-generate" onclick="showTab('generate')"><span class="m-tab-icon">🔗</span>New Link</button>
-  <button class="m-tab" id="mt-links" onclick="showTab('links')"><span class="m-tab-icon">📋</span>Links</button>
+  <button class="m-tab" id="mt-leads" onclick="showTab('leads')"><span class="m-tab-icon">👥</span>Leads</button>
   <button class="m-tab" id="mt-conversions" onclick="showTab('conversions')"><span class="m-tab-icon">💰</span>Revenue</button>
   <button class="m-tab" id="mt-setup" onclick="showTab('setup')"><span class="m-tab-icon">⚙️</span>Setup</button>
 </div>
@@ -632,10 +655,71 @@ async function fetchClicks() {
   } catch(e) { console.warn('Supabase fetch error', e); }
 }
 
+// ── FETCH LEADS FROM SUPABASE ──────────────────────────────
+let leadsCache = [];
+
+async function fetchLeads() {
+  if (!isConfigured()) return;
+  try {
+    const res = await fetch(
+      `${cfg.url}/rest/v1/leads?order=ts.desc&limit=500`,
+      { headers: { apikey: cfg.key, Authorization: `Bearer ${cfg.key}` } }
+    );
+    if (!res.ok) return;
+    leadsCache = await res.json();
+  } catch(e) { console.warn('Leads fetch error', e); }
+}
+
+function renderLeadsTab() {
+  const filterClient = document.getElementById('leads-filter-client')?.value || '';
+  const filtered = filterClient ? leadsCache.filter(l => l.client === filterClient) : leadsCache;
+
+  // Stats
+  const total = filtered.length;
+  const today = new Date().toISOString().split('T')[0];
+  const todayCount = filtered.filter(l => l.ts && l.ts.startsWith(today)).length;
+  const platforms = [...new Set(filtered.map(l => l.platform).filter(Boolean))];
+  const topPlatform = platforms.length ? filtered.reduce((acc, l) => {
+    acc[l.platform] = (acc[l.platform]||0)+1; return acc;
+  }, {}) : {};
+  const topP = Object.entries(topPlatform).sort((a,b)=>b[1]-a[1])[0];
+
+  document.getElementById('leads-stats').innerHTML = `
+    <div class="stat c-accent"><div class="stat-label">Total Leads</div><div class="stat-val c-accent">${total}</div><div class="stat-sub">From your forms · live</div></div>
+    <div class="stat c-green"><div class="stat-label">New Today</div><div class="stat-val c-green">${todayCount}</div><div class="stat-sub">${today}</div></div>
+    <div class="stat c-yellow"><div class="stat-label">Top Platform</div><div class="stat-val c-yellow" style="font-size:16px">${topP ? cap(topP[0]) : '—'}</div><div class="stat-sub">${topP ? topP[1]+' leads' : 'No data yet'}</div></div>
+    <div class="stat c-blue"><div class="stat-label">Clients w/ Leads</div><div class="stat-val c-blue">${[...new Set(filtered.map(l=>l.client))].filter(Boolean).length}</div><div class="stat-sub">Across all clients</div></div>
+  `;
+
+  // Table
+  const tbody = document.getElementById('leads-tbody');
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--muted)">
+      ${isConfigured() ? 'No leads yet — leads appear here automatically when someone fills out your form.' : '⚠️ Connect Supabase in the Setup tab first.'}
+    </td></tr>`;
+    return;
+  }
+  tbody.innerHTML = filtered.map(l => {
+    const cl = clients.find(c => c.id === l.client) || {};
+    const lnk = links.find(x => x.id === l.link_id);
+    const dateStr = l.ts ? l.ts.split('T')[0] : '—';
+    return `<tr>
+      <td style="color:var(--muted);white-space:nowrap">${dateStr}</td>
+      <td><span style="color:${cl.color||'var(--accent)'}">●</span> ${cl.name||l.client||'—'}</td>
+      <td><strong>${l.name||'—'}</strong></td>
+      <td>${l.phone||'—'}</td>
+      <td style="color:var(--muted)">${l.email||'—'}</td>
+      <td><span class="tag tag-reel">${l.interest||'—'}</span></td>
+      <td><span class="tag tag-${l.platform==='instagram'?'ig':'fb'}">${cap(l.platform||'—')}</span></td>
+      <td style="color:var(--muted);font-size:11px">${lnk?lnk.title:'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
 async function refresh() {
   const btn = document.getElementById('refresh-btn');
   btn.classList.add('spinning');
-  await fetchClicks();
+  await Promise.all([fetchClicks(), fetchLeads()]);
   renderAll();
   btn.classList.remove('spinning');
 }
@@ -643,7 +727,7 @@ async function refresh() {
 function startAutoRefresh() {
   if (autoTimer) clearInterval(autoTimer);
   autoTimer = setInterval(async () => {
-    await fetchClicks();
+    await Promise.all([fetchClicks(), fetchLeads()]);
     renderAll();
   }, 30000); // every 30s
 }
@@ -679,6 +763,7 @@ function showTab(name) {
 function renderAll() {
   renderDashboard();
   renderLinks();
+  renderLeadsTab();
   renderConversions();
   renderClients();
   renderSetupStatus();
@@ -704,7 +789,7 @@ function renderDashboard() {
 
   document.getElementById('dash-stats').innerHTML = `
     <div class="stat c-accent"><div class="stat-label">Total Clicks</div><div class="stat-val c-accent">${fmt(tc)}</div><div class="stat-sub">Across all links · live</div></div>
-    <div class="stat c-green"><div class="stat-label">Conversions</div><div class="stat-val c-green">${tconv}</div><div class="stat-sub">Logged by you</div></div>
+    <div class="stat c-green"><div class="stat-label">Leads Captured</div><div class="stat-val c-green">${leadsCache.length}</div><div class="stat-sub">Auto from forms · live</div></div>
     <div class="stat c-yellow"><div class="stat-label">Revenue Attributed</div><div class="stat-val c-yellow">$${fmt(trev)}</div><div class="stat-sub">From your content</div></div>
     <div class="stat c-blue"><div class="stat-label">Active Links</div><div class="stat-val c-blue">${links.length}</div><div class="stat-sub">${[...new Set(links.map(l=>l.clientId))].length} client${[...new Set(links.map(l=>l.clientId))].length!==1?'s':''}</div></div>
   `;
@@ -995,7 +1080,7 @@ function renderSetupStatus() {
 // DROPDOWNS
 // ─────────────────────────────────────────────
 function populateDropdowns() {
-  ['g-client','cv-client','filter-client'].forEach(id => {
+  ['g-client','cv-client','filter-client','leads-filter-client'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
     const cur = el.value;
